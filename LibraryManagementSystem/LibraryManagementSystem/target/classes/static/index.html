@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Members</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        input, select, button {
+            margin: 8px 0;
+            padding: 5px;
+            display: block;
+            width: 200px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Library Member Management</h1>
+
+    <form id="memberForm">
+        <label>Name:</label>
+        <input type="text" id="name" required>
+
+        <label>Join Date:</label>
+        <input type="date" id="joinDate" required>
+
+        <label>Issued Books:</label>
+        <input type="number" id="issuedBooks" min="0" required>
+
+        <label>Active:</label>
+        <select id="active">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </select>
+
+        <button type="submit">Add Member</button>
+    </form>
+
+    <h2>All Members</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Join Date</th>
+                <th>Issued Books</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody id="memberTable">
+            <!-- Dynamically filled -->
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('memberForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const member = {
+                name: document.getElementById('name').value,
+                joinDate: document.getElementById('joinDate').value,
+                issuedBooks: parseInt(document.getElementById('issuedBooks').value),
+                active: document.getElementById('active').value === "true"
+            };
+
+            fetch('/api/members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(member)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Member added successfully!");
+                loadMembers();
+                document.getElementById('memberForm').reset();
+            })
+            .catch(err => console.error('Error:', err));
+        });
+
+        function loadMembers() {
+            fetch('/api/members')
+                .then(res => res.json())
+                .then(data => {
+                    const tableBody = document.getElementById('memberTable');
+                    tableBody.innerHTML = '';
+                    data.forEach(m => {
+                        const row = `<tr>
+                            <td>${m.id}</td>
+                            <td>${m.name}</td>
+                            <td>${m.joinDate}</td>
+                            <td>${m.issuedBooks}</td>
+                            <td>${m.active ? 'Yes' : 'No'}</td>
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                });
+        }
+
+        // Load members on page load
+        window.onload = loadMembers;
+    </script>
+
+</body>
+</html>
